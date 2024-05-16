@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - main  # Deploy when pushing to the main branch
+      - main 
 
 jobs:
   build:
