@@ -3,40 +3,18 @@ name: Deploy
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '14'
-
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build the project
-      run: npm run build
-
-    - name: Deploy to Server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SERVER: ${{ secrets.SERVER }}
-        USERNAME: ${{ secrets.USERNAME }}
-      run: |
-        echo "$SSH_PRIVATE_KEY" > private_key
-        chmod 600 private_key
-        ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$SERVER << 'EOF'
-          cd /path/to/your/app
-          git pull origin main
-          npm install
-          npm run build
-          pm2 restart all
-        EOF
-        rm private_key
+      - name: Run tests
+        run: |
+          python -m pip install -r requirements.txt
+          pytest snake_game_tester.py
+        working-directory: tests
