@@ -3,7 +3,8 @@ name: Deploy
 on:
   push:
     branches:
-      - main 
+      - main  # Deploy when pushing to the main branch
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,8 +25,18 @@ jobs:
       run: npm run build
 
     - name: Deploy to Server
-      run: ./deploy.sh
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SERVER: ${{ secrets.SERVER }}
         USERNAME: ${{ secrets.USERNAME }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        ssh -o StrictHostKeyChecking=no -i private_key $USERNAME@$SERVER << 'EOF'
+          cd /path/to/your/app
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart all
+        EOF
+        rm private_key
