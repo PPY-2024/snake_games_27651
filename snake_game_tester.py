@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.abspath('C:/Users/bemro/PycharmProjects/snake_game/src'))
+sys.path.append(os.path.abspath('/src'))
 
 import unittest
 from src.main import FRUIT
