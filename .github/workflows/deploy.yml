@@ -24,4 +24,4 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: ${{ github.workspace }}/src 
-        run: pytest tests/snake_game_tester.py
+        run: pytest
