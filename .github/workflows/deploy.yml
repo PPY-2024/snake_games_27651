@@ -19,7 +19,7 @@ jobs:
           python-version: '3.12.3'  
 
       - name: Install pytest
-        run: python -m pip install pytest
+        run: python -m pip install pytest pygame
 
       - name: Run tests
         env:
