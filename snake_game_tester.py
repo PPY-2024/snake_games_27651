@@ -3,6 +3,7 @@ import os
 import unittest
 from pygame.math import Vector2
 
+# Dynamically set the path to the src directory based on the current file's location
 current_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.join(current_dir, 'src')
 sys.path.append(src_dir)
