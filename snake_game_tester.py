@@ -1,12 +1,13 @@
 import sys
 import os
-sys.path.append(os.path.abspath('/src'))
-
 import unittest
-from src.main import FRUIT
-from src.main import SNAKE
-from src.main import MAIN
 from pygame.math import Vector2
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(current_dir, 'src')
+sys.path.append(src_dir)
+
+from src.main import FRUIT, SNAKE, MAIN
 
 class TestSnake(unittest.TestCase):
     def setUp(self):
