@@ -20,6 +20,14 @@ class FRUIT:
         self.y = random.randint(0, cell_number - 1)
         self.pos = Vector2(self.x, self.y)
 
+class OBSTACLE:
+    def __init__(self, position):
+        self.pos = position
+
+    def draw_obstacle(self):
+        obstacle_rect = pygame.Rect(int(self.pos.x * cell_size), int(self.pos.y * cell_size), cell_size, cell_size)
+        pygame.draw.rect(screen, (200, 0, 0), obstacle_rect)
+
 class SNAKE:
     def __init__(self):
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
@@ -120,7 +128,17 @@ class MAIN:
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT()
+        self.obstacles = []
         self.game_state = GameState.MENU
+        self.create_obstacles()
+
+    def create_obstacles(self):
+        for _ in range(5):  # Create 5 obstacles
+            while True:
+                obstacle_position = Vector2(random.randint(0, cell_number - 1), random.randint(0, cell_number - 1))
+                if obstacle_position not in self.snake.body and obstacle_position != self.fruit.pos:
+                    self.obstacles.append(OBSTACLE(obstacle_position))
+                    break
 
     def update(self):
         if self.game_state == GameState.GAME:
@@ -132,6 +150,8 @@ class MAIN:
         if self.game_state == GameState.GAME:
             self.draw_grass()
             self.fruit.draw_fruit()
+            for obstacle in self.obstacles:
+                obstacle.draw_obstacle()
             self.snake.draw_snake()
             self.draw_score()
         elif self.game_state == GameState.GAME_OVER:
@@ -153,6 +173,9 @@ class MAIN:
             self.game_state = GameState.GAME_OVER
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
+                self.game_state = GameState.GAME_OVER
+        for obstacle in self.obstacles:
+            if self.snake.body[0] == obstacle.pos:
                 self.game_state = GameState.GAME_OVER
 
     def draw_grass(self):
@@ -208,6 +231,8 @@ class MAIN:
     def reset(self):
         self.snake.reset()
         self.fruit.randomize()
+        self.obstacles = []
+        self.create_obstacles()
         self.game_state = GameState.GAME
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
