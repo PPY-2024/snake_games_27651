@@ -1,6 +1,11 @@
 import pygame, sys, random
 from pygame.math import Vector2
+from enum import Enum, auto
 
+class GameState(Enum):
+    MENU = auto()
+    GAME = auto()
+    GAME_OVER = auto()
 
 class FRUIT:
     def __init__(self):
@@ -15,6 +20,13 @@ class FRUIT:
         self.y = random.randint(0, cell_number - 1)
         self.pos = Vector2(self.x, self.y)
 
+class OBSTACLE:
+    def __init__(self, position):
+        self.pos = position
+
+    def draw_obstacle(self):
+        obstacle_rect = pygame.Rect(int(self.pos.x * cell_size), int(self.pos.y * cell_size), cell_size, cell_size)
+        pygame.draw.rect(screen, (200, 0, 0), obstacle_rect)
 
 class SNAKE:
     def __init__(self):
@@ -112,27 +124,40 @@ class SNAKE:
     def play_crunch_sound(self):
         self.sound.play()
 
-
 class MAIN:
     def __init__(self):
         self.snake = SNAKE()
         self.fruit = FRUIT()
-        self.game_active = True
+        self.obstacles = []
+        self.game_state = GameState.MENU
+        self.create_obstacles()
+
+    def create_obstacles(self):
+        for _ in range(5):  # Create 5 obstacles
+            while True:
+                obstacle_position = Vector2(random.randint(0, cell_number - 1), random.randint(0, cell_number - 1))
+                if obstacle_position not in self.snake.body and obstacle_position != self.fruit.pos:
+                    self.obstacles.append(OBSTACLE(obstacle_position))
+                    break
 
     def update(self):
-        if self.game_active:
+        if self.game_state == GameState.GAME:
             self.snake.move_snake()
             self.check_collision()
             self.check_fail()
 
     def draw_elements(self):
-        if self.game_active:
+        if self.game_state == GameState.GAME:
             self.draw_grass()
             self.fruit.draw_fruit()
+            for obstacle in self.obstacles:
+                obstacle.draw_obstacle()
             self.snake.draw_snake()
             self.draw_score()
-        else:
+        elif self.game_state == GameState.GAME_OVER:
             self.draw_game_over()
+        elif self.game_state == GameState.MENU:
+            self.draw_menu()
 
     def check_collision(self):
         if self.fruit.pos == self.snake.body[0]:
@@ -145,10 +170,13 @@ class MAIN:
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
-            self.game_active = False
+            self.game_state = GameState.GAME_OVER
         for block in self.snake.body[1:]:
             if block == self.snake.body[0]:
-                self.game_active = False
+                self.game_state = GameState.GAME_OVER
+        for obstacle in self.obstacles:
+            if self.snake.body[0] == obstacle.pos:
+                self.game_state = GameState.GAME_OVER
 
     def draw_grass(self):
         grass_color = (167, 209, 61)
@@ -190,11 +218,22 @@ class MAIN:
         screen.blit(score_surface, score_rect)
         screen.blit(play_again_surface, play_again_rect)
 
+    def draw_menu(self):
+        menu_surface = game_font.render("Snake Game", True, (56, 74, 12))
+        menu_rect = menu_surface.get_rect(center=(cell_number * cell_size / 2, cell_number * cell_size / 2 - 50))
+
+        start_surface = game_font.render("Press SPACE to Start", True, (56, 74, 12))
+        start_rect = start_surface.get_rect(center=(cell_number * cell_size / 2, cell_number * cell_size / 2))
+
+        screen.blit(menu_surface, menu_rect)
+        screen.blit(start_surface, start_rect)
+
     def reset(self):
         self.snake.reset()
         self.fruit.randomize()
-        self.game_active = True
-
+        self.obstacles = []
+        self.create_obstacles()
+        self.game_state = GameState.GAME
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
@@ -215,10 +254,10 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        if event.type == SCREEN_UPDATE and main_game.game_active:
+        if event.type == SCREEN_UPDATE and main_game.game_state == GameState.GAME:
             main_game.update()
         if event.type == pygame.KEYDOWN:
-            if main_game.game_active:
+            if main_game.game_state == GameState.GAME:
                 if event.key == pygame.K_UP and main_game.snake.direction.y != 1:
                     main_game.snake.direction = Vector2(0, -1)
                 if event.key == pygame.K_DOWN and main_game.snake.direction.y != -1:
@@ -227,12 +266,15 @@ while True:
                     main_game.snake.direction = Vector2(-1, 0)
                 if event.key == pygame.K_RIGHT and main_game.snake.direction.x != -1:
                     main_game.snake.direction = Vector2(1, 0)
-            else:
+            elif main_game.game_state == GameState.GAME_OVER:
                 if event.key == pygame.K_y:
                     main_game.reset()
                 if event.key == pygame.K_n:
                     pygame.quit()
                     sys.exit()
+            elif main_game.game_state == GameState.MENU:
+                if event.key == pygame.K_SPACE:
+                    main_game.reset()
 
     screen.fill((174, 245, 93))
     main_game.draw_elements()

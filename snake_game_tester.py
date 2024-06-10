@@ -1,12 +1,14 @@
 import sys
 import os
-sys.path.append(os.path.abspath('C:/Users/bemro/PycharmProjects/snake_game/src'))
-
 import unittest
-from src.main import FRUIT
-from src.main import SNAKE
-from src.main import MAIN
 from pygame.math import Vector2
+
+# Dynamically set the path to the src directory based on the current file's location
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.join(current_dir, 'src')
+sys.path.append(src_dir)
+
+from src.main import FRUIT, SNAKE, MAIN
 
 class TestSnake(unittest.TestCase):
     def setUp(self):
